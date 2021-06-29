@@ -19,6 +19,13 @@ public class Player : MonoBehaviour
     private UIManager _uiManager;
     [SerializeField]
     private int _lives = 3;
+    [SerializeField] float _pushSpeed = 2;
+
+    private bool _canWallJump = false;
+
+    private Vector3 _direction, _velocity;
+
+    ControllerColliderHit _hitInfo;
 
     // Start is called before the first frame update
     void Start()
@@ -40,11 +47,15 @@ public class Player : MonoBehaviour
     void Update()
     {
         float horizontalInput = Input.GetAxis("Horizontal");
-        Vector3 direction = new Vector3(horizontalInput, 0, 0);
-        Vector3 velocity = direction * _speed;
-
+        
         if (_controller.isGrounded == true)
         {
+            _canWallJump = false;
+            _direction = new Vector3(horizontalInput, 0, 0);
+            _velocity = _direction * _speed;
+
+
+
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 _yVelocity = _jumpHeight;
@@ -53,21 +64,27 @@ public class Player : MonoBehaviour
         }
         else
         {
+            
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                if (_canDoubleJump == true)
+                if (_canDoubleJump == true && _canWallJump != true)
                 {
                     _yVelocity += _jumpHeight;
                     _canDoubleJump = false;
+                }
+                if(_canWallJump == true)
+                {
+                    _velocity = _hitInfo.normal * _speed;
+                    _yVelocity = _jumpHeight;
                 }
             }
 
             _yVelocity -= _gravity;
         }
 
-        velocity.y = _yVelocity;
+        _velocity.y = _yVelocity;
 
-        _controller.Move(velocity * Time.deltaTime);
+        _controller.Move(_velocity * Time.deltaTime);
     }
 
     public void AddCoins()
@@ -87,5 +104,34 @@ public class Player : MonoBehaviour
         {
             SceneManager.LoadScene(0);
         }
+    }
+
+    public int Coins()
+    {
+        return _coins;
+    }
+
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        
+        if (_controller.isGrounded == false && hit.transform.tag == "Wall")
+        {
+            Debug.DrawRay(hit.point, hit.normal, Color.blue);
+            _hitInfo = hit;
+            _canWallJump = true;
+        }
+
+        if((hit.collider.tag == "MovableBox"))
+        {
+            Rigidbody body = hit.collider.attachedRigidbody;
+            if (body == null || body.isKinematic)
+                return;
+
+            Vector3 pushDir = new Vector3(hit.moveDirection.x, 0,0);
+
+            body.velocity = pushDir * _pushSpeed;
+
+        }
+      
     }
 }

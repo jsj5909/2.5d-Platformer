@@ -6,15 +6,53 @@ public class ElevatorPanel : MonoBehaviour
 {
     [SerializeField] private GameObject _callButton;
 
+    [SerializeField] private int _coinsRequired = 8;
+
+    private Elevator _elevator;
+
+    private Player _player;
+
+    private bool _elevatorCalled = false;
+
+    private void Start()
+    {
+        _player = GameObject.Find("Player").GetComponent<Player>();
+
+        _elevator = GameObject.Find("ElevatorPlatform").GetComponent<Elevator>();
+
+        if (_player == null)
+        {
+            Debug.LogError("Player is Null");
+        }
+
+        if (_elevator == null)
+        {
+            Debug.LogError("Elevator is Null");
+        }
+    }
+
     private void OnTriggerStay(Collider other)
     {
         if(other.gameObject.tag == "Player")
         {
-            if(Input.GetKeyDown(KeyCode.E))
-            {
-                MeshRenderer mr = _callButton.GetComponent<MeshRenderer>();
 
-                mr.material.SetColor("_Color", Color.green);
+            MeshRenderer mr = _callButton.GetComponent<MeshRenderer>();
+            if (Input.GetKeyDown(KeyCode.E)  && (_player.Coins() >= _coinsRequired))
+            {
+
+                if (_elevatorCalled == true)
+                {
+                    mr.material.SetColor("_Color", Color.red);
+                }
+                else
+                {
+                    mr.material.SetColor("_Color", Color.green);
+                    _elevatorCalled = true;
+
+                    
+                }
+
+                _elevator.CallElevator();
             }
 
         }
