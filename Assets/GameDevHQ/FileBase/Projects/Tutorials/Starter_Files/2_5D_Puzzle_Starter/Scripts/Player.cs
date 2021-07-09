@@ -55,6 +55,10 @@ public class Player : MonoBehaviour
         _uiManager.UpdateLivesDisplay(_lives);
     }
 
+    /// <summary>
+    /// need to move input to update and everything else to fixed update
+    /// </summary>
+  
     // Update is called once per frame
     void Update()
     {
@@ -123,11 +127,6 @@ public class Player : MonoBehaviour
         }
         else
         {
-
-            
-           // _velocity = _direction * _speed;
-
-            //_yVelocity -= _gravity * Time.deltaTime;
             _velocity.y -= _gravity * Time.deltaTime;
            
 
@@ -154,43 +153,10 @@ public class Player : MonoBehaviour
 
                 }
 
-                
-
              }
    
          }
 
-
-
-
-        // _direction = new Vector3(0, -_yVelocity * Time.deltaTime, horizontalInput);
-
-
-        // if (Input.GetKeyDown(KeyCode.Space))
-        //  {
-        // Debug.Log("Jump!!!!!!!!!");
-        //     _jumping = true;
-
-        //    _anim.SetBool("Jumping", _jumping);
-        //    _direction.y += _jumpHeight;
-
-        //  }
-
-
-
-        // }
-        //else
-        //    {
-        //       _direction.y -= _gravity* Time.deltaTime;
-        //}
-
-
-
-        // Vector3 velocity = _direction * _speed;
-       // _velocity = _direction * _speed;
-
-        //_velocity.y = _yVelocity;
-      //  Debug.Log("Velocity: " + _velocity.ToString());
         _controller.Move(_velocity * Time.deltaTime);
     }
 
