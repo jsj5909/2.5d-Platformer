@@ -12,7 +12,7 @@ public class Player : MonoBehaviour
     private float _gravity = 1.0f;
     [SerializeField]
     private float _jumpHeight = 15.0f;
-    private float _yVelocity;
+    private float _yVelocity = 0;
     private bool _canDoubleJump = false;
     [SerializeField]
     private int _coins;
@@ -27,10 +27,18 @@ public class Player : MonoBehaviour
 
     ControllerColliderHit _hitInfo;
 
+    private bool _hangingFromLedge = false;
+
+    private Ledge _activeLedge;
+
+    private Animator _anim;
+
     // Start is called before the first frame update
     void Start()
     {
-        Application.targetFrameRate = 60;
+       // Application.targetFrameRate = 60;
+
+        _anim = GetComponentInChildren<Animator>();
 
         _controller = GetComponent<CharacterController>();
         _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
@@ -46,25 +54,70 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float horizontalInput = Input.GetAxis("Horizontal");
+        CalculateMovement();
         
+        if (_hangingFromLedge == true)
+        {
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                _anim.SetTrigger("ClimbUp");
+            }
+        }
+
+        
+    }
+
+    private void CalculateMovement()
+    {
+        float horizontalInput = Input.GetAxisRaw("Horizontal");
+
+        Debug.Log("Ground: " + _controller.isGrounded);
+
         if (_controller.isGrounded == true)
         {
             _canWallJump = false;
-            _direction = new Vector3(horizontalInput, 0, 0);
+
+            _direction = new Vector3(horizontalInput, -_gravity * Time.deltaTime, 0);
+
             _velocity = _direction * _speed;
+           // _velocity.y = -_gravity;
+          //  _yVelocity = -_gravity;
+            
+           
 
+            if (horizontalInput != 0)
+            {
+                Vector3 facing = transform.localEulerAngles;
 
+                facing.y = _direction.x < 0 ? 270 : 90;
+
+                transform.localEulerAngles = facing;
+
+                _anim.SetFloat("Speed", Mathf.Abs(horizontalInput));
+            }
+            else
+            {
+                _anim.SetFloat("Speed", Mathf.Abs(horizontalInput)); 
+            }
 
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 _yVelocity = _jumpHeight;
                 _canDoubleJump = true;
+                 _velocity.y = _jumpHeight;
+                Debug.Log("Jump From Ground!");
             }
+
+           // Debug.Log("hInput: " + horizontalInput.ToString());
+           // _direction = new Vector3(horizontalInput, _yVelocity * Time.deltaTime, 0);
+
         }
         else
         {
+            _yVelocity -= _gravity * Time.deltaTime;
+
             
+
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 if (_canDoubleJump == true && _canWallJump != true)
@@ -72,18 +125,55 @@ public class Player : MonoBehaviour
                     _yVelocity += _jumpHeight;
                     _canDoubleJump = false;
                 }
-                if(_canWallJump == true)
+                if (_canWallJump == true)
                 {
                     _velocity = _hitInfo.normal * _speed;
                     _yVelocity = _jumpHeight;
                 }
-            }
 
-            _yVelocity -= _gravity;
+
+
+            }
+          //  else
+          //  {
+                //_direction = new Vector3(0, _yVelocity * Time.deltaTime, 0);
+            _velocity = _direction * _speed ;
+            _velocity.y = _yVelocity ;
+           // }
+            
         }
 
-        _velocity.y = _yVelocity;
 
+
+
+        // _direction = new Vector3(0, -_yVelocity * Time.deltaTime, horizontalInput);
+
+
+        // if (Input.GetKeyDown(KeyCode.Space))
+        //  {
+        // Debug.Log("Jump!!!!!!!!!");
+        //     _jumping = true;
+
+        //    _anim.SetBool("Jumping", _jumping);
+        //    _direction.y += _jumpHeight;
+
+        //  }
+
+
+
+        // }
+        //else
+        //    {
+        //       _direction.y -= _gravity* Time.deltaTime;
+        //}
+
+
+
+        // Vector3 velocity = _direction * _speed;
+       // _velocity = _direction * _speed;
+
+        //_velocity.y = _yVelocity;
+      //  Debug.Log("Velocity: " + _velocity.ToString());
         _controller.Move(_velocity * Time.deltaTime);
     }
 
@@ -134,4 +224,28 @@ public class Player : MonoBehaviour
         }
       
     }
+
+    public void GrabLedge(Vector3 handPosition, Ledge currentLedge)
+    {
+        _controller.enabled = false;
+
+        _anim.SetBool("GrabLedge", true);
+
+        _anim.SetFloat("Speed", 0.0f);
+        _anim.SetBool("Jumping", false);
+
+        transform.position = handPosition;
+
+        _hangingFromLedge = true;
+
+        _activeLedge = currentLedge;
+    }
+
+    public void ClimbUpComplete()
+    {
+        transform.position = _activeLedge.GetStandPos();
+        _anim.SetBool("GrabLedge", false);
+        _controller.enabled = true;
+    }
+
 }
