@@ -40,19 +40,32 @@ public class ElevatorPanel : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.E)  && (_player.Coins() >= _coinsRequired))
             {
 
-                if (_elevatorCalled == true)
+               if(_elevatorCalled == false)
                 {
-                    mr.material.SetColor("_Color", Color.red);
+                    mr.material.color = Color.green;
+                    _elevator.CallElevator();
+                    _elevatorCalled = true;
+                }
+               else
+                {
+                    _elevator.CallElevator();
+                }
+                
+                /*
+                if (_elevatorCalled == true)
+               {
+                    mr.material.SetColor("_BaseColor", Color.green);
                 }
                 else
                 {
-                    mr.material.SetColor("_Color", Color.green);
+                    mr.material.SetColor("_BaseColor", Color.green);
                     _elevatorCalled = true;
 
                     
                 }
 
                 _elevator.CallElevator();
+                */
             }
 
         }

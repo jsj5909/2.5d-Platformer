@@ -11,6 +11,8 @@ public class Elevator : MonoBehaviour
     [SerializeField] private float _speed = 1f;
 
     private Player _player;
+
+    private bool _elevatorMoving = false;
     
     // Start is called before the first frame update
     void Start()
@@ -29,22 +31,26 @@ public class Elevator : MonoBehaviour
         //go up
         // else
         //go down_
-        if(_goingDown)
-        {
-            transform.position = Vector3.MoveTowards(transform.position, _target.position, Time.deltaTime * _speed);
-        }
-        else
-        {
-            transform.position = Vector3.MoveTowards(transform.position, _origin.position, Time.deltaTime * _speed);
+        
+            if (_goingDown)
+            {
+                transform.position = Vector3.MoveTowards(transform.position, _target.position, Time.deltaTime * _speed);
+            }
+            else
+            {
+                transform.position = Vector3.MoveTowards(transform.position, _origin.position, Time.deltaTime * _speed);
 
-        }
+            }
+        
 
     }
 
     public void CallElevator()
     {
         //check current pos
-        _goingDown = !_goingDown;    
+        _goingDown = !_goingDown;
+
+        
     }
 
     private void OnTriggerEnter(Collider other)
