@@ -37,6 +37,10 @@ public class Player : MonoBehaviour
 
     private Quaternion _facing = new Quaternion();
 
+    private bool _jumping = false;
+
+    private float zPos = 0.0f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -62,17 +66,28 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        CalculateMovement();
-      /*  
-        if (_hangingFromLedge == true)
+       if(Input.GetKeyDown(KeyCode.Space))
         {
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                _anim.SetTrigger("ClimbUp");
-            }
+            _jumping = true;
         }
-      */
-        
+        /*  
+          if (_hangingFromLedge == true)
+          {
+              if (Input.GetKeyDown(KeyCode.E))
+              {
+                  _anim.SetTrigger("ClimbUp");
+              }
+          }
+        */
+       
+    }
+
+    private void FixedUpdate()
+    {
+        CalculateMovement();
+
+
+
     }
 
     private void CalculateMovement()
@@ -90,12 +105,10 @@ public class Player : MonoBehaviour
             _canWallJump = false;
 
             _direction = new Vector3(horizontalInput, -_gravity * Time.deltaTime, 0);
-
+          
             _velocity = _direction * _speed;
-           // _velocity.y = -_gravity;
-          //  _yVelocity = -_gravity;
-            
-           
+            _velocity.y = -_gravity;
+         
 
             if (horizontalInput != 0)
             {
@@ -112,25 +125,28 @@ public class Player : MonoBehaviour
                 _anim.SetFloat("Speed", Mathf.Abs(horizontalInput)); 
             }
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (_jumping)
             {
                 _yVelocity = _jumpHeight;
                 _canDoubleJump = true;
                  _velocity.y = _jumpHeight;
                 Debug.Log("Jump From Ground!");
                 _anim.SetBool("Jumping", true);
+                _jumping = false;
             }
 
            // Debug.Log("hInput: " + horizontalInput.ToString());
            // _direction = new Vector3(horizontalInput, _yVelocity * Time.deltaTime, 0);
+            //_velocity = _direction * _speed;
 
         }
         else
         {
             _velocity.y -= _gravity * Time.deltaTime;
-           
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            _anim.SetFloat("Speed", 0);
+
+            if (_jumping)
             {
                 if (_canDoubleJump == true && _canWallJump != true)
                 {
@@ -144,19 +160,31 @@ public class Player : MonoBehaviour
                     _velocity = _hitInfo.normal * _speed;
                   
                     _velocity.y = _jumpHeight;
+                    
+                    _velocity.z = 0.0f;
 
-                    _facing = new Quaternion();
+                    //_facing = Quaternion.LookRotation(_hitInfo.normal);
 
-                    _facing = Quaternion.LookRotation(_hitInfo.normal);
+                    //transform.rotation = _facing;
 
-                    transform.rotation = _facing;
+                    
+                        Vector3 facing = transform.localEulerAngles;
+
+                        facing.y = _hitInfo.normal.x < 0 ? 270 : 90;
+
+                        transform.localEulerAngles = facing;
+
+                        
+
+
 
                 }
+                _jumping = false;
 
-             }
+            }
    
          }
-
+       
         _controller.Move(_velocity * Time.deltaTime);
     }
 
@@ -186,10 +214,10 @@ public class Player : MonoBehaviour
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        
+        Debug.DrawRay(hit.point, hit.normal, Color.blue, 1f);
         if (_controller.isGrounded == false && hit.transform.tag == "Wall")
         {
-            Debug.DrawRay(hit.point, hit.normal, Color.blue);
+            Debug.DrawRay(hit.point, hit.normal, Color.blue,2f);
             _hitInfo = hit;
             _canWallJump = true;
         }
