@@ -12,7 +12,7 @@ public class Elevator : MonoBehaviour
 
     private Player _player;
 
-    private bool _elevatorMoving = false;
+   
     
     // Start is called before the first frame update
     void Start()
@@ -39,7 +39,7 @@ public class Elevator : MonoBehaviour
             else
             {
                 transform.position = Vector3.MoveTowards(transform.position, _origin.position, Time.deltaTime * _speed);
-
+                
             }
         
 
@@ -66,6 +66,7 @@ public class Elevator : MonoBehaviour
         if (other.tag == "Player")
         {
             other.transform.parent = null;
+
         }
     }
 

@@ -51,21 +51,7 @@ public class ElevatorPanel : MonoBehaviour
                     _elevator.CallElevator();
                 }
                 
-                /*
-                if (_elevatorCalled == true)
-               {
-                    mr.material.SetColor("_BaseColor", Color.green);
-                }
-                else
-                {
-                    mr.material.SetColor("_BaseColor", Color.green);
-                    _elevatorCalled = true;
-
-                    
-                }
-
-                _elevator.CallElevator();
-                */
+              
             }
 
         }

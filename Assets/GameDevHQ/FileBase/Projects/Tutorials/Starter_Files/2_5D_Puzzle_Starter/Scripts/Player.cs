@@ -70,15 +70,24 @@ public class Player : MonoBehaviour
         {
             _jumping = true;
         }
-        /*  
-          if (_hangingFromLedge == true)
+          
+        if (_hangingFromLedge == true)
+        {
+          if (Input.GetKeyDown(KeyCode.W))
           {
-              if (Input.GetKeyDown(KeyCode.E))
-              {
-                  _anim.SetTrigger("ClimbUp");
-              }
+             _anim.SetTrigger("ClimbUp");
           }
-        */
+        }
+       if(Input.GetKeyDown(KeyCode.C))
+        {
+            _controller.enabled = false;
+            
+        }
+
+       if(Input.GetKeyDown(KeyCode.V))
+        {
+            _controller.enabled = true;
+        }
        
     }
 
@@ -92,7 +101,7 @@ public class Player : MonoBehaviour
 
     private void CalculateMovement()
     {
-       
+        
         
         float horizontalInput = Input.GetAxisRaw("Horizontal");
 
@@ -102,12 +111,15 @@ public class Player : MonoBehaviour
         {
             _anim.SetBool("Jumping", false);
 
-            _canWallJump = false;
+            //_yVelocity = 0;
 
-            _direction = new Vector3(horizontalInput, -_gravity * Time.deltaTime, 0);
+            _canWallJump = false;
+            _canDoubleJump = false;
+
+            _direction = new Vector3(horizontalInput, 0, 0);
           
             _velocity = _direction * _speed;
-            _velocity.y = -_gravity;
+            _velocity.y += -_gravity;
          
 
             if (horizontalInput != 0)
@@ -154,18 +166,16 @@ public class Player : MonoBehaviour
                     _canDoubleJump = false;
                     _velocity = _direction * _speed;
                     _velocity.y = _yVelocity;
+
+
                 }
                 if (_canWallJump == true)
                 {
                     _velocity = _hitInfo.normal * _speed;
                   
-                    _velocity.y = _jumpHeight;
+                    _velocity.y += _jumpHeight;
                     
                     _velocity.z = 0.0f;
-
-                    //_facing = Quaternion.LookRotation(_hitInfo.normal);
-
-                    //transform.rotation = _facing;
 
                     
                         Vector3 facing = transform.localEulerAngles;
@@ -174,18 +184,16 @@ public class Player : MonoBehaviour
 
                         transform.localEulerAngles = facing;
 
-                        
-
-
-
                 }
                 _jumping = false;
 
             }
    
          }
-       
-        _controller.Move(_velocity * Time.deltaTime);
+        if (_controller.enabled)
+        {
+            _controller.Move(_velocity * Time.deltaTime);
+        }
     }
 
     public void AddCoins()
