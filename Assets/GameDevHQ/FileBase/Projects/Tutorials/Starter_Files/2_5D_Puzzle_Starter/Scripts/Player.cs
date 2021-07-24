@@ -39,6 +39,10 @@ public class Player : MonoBehaviour
 
     private bool _jumping = false;
 
+    private bool _ladderClimb = false;
+    private bool _canClimbLadder = false;
+    private Vector3 _currentLadderClimbPosition;
+
     private float zPos = 0.0f;
 
     // Start is called before the first frame update
@@ -87,6 +91,14 @@ public class Player : MonoBehaviour
        if(Input.GetKeyDown(KeyCode.V))
         {
             _controller.enabled = true;
+        }
+
+       if(_canClimbLadder == true)
+        {
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                ClimbLadder();
+            }
         }
        
     }
@@ -258,6 +270,26 @@ public class Player : MonoBehaviour
         _hangingFromLedge = true;
 
         _activeLedge = currentLedge;
+    }
+
+    public void CanClimbLadder(Vector3 ladderPosition)
+    {
+        _canClimbLadder = !_canClimbLadder;
+
+        _currentLadderClimbPosition = ladderPosition;
+    }
+
+    public void ClimbLadder()
+    {
+        _controller.enabled = false;
+        
+        transform.position = _currentLadderClimbPosition;
+        _anim.SetBool("LadderClimb", true);
+        _ladderClimb = true;
+        Debug.Log("CLimbing Ladder");
+
+       
+        //transform  = -2.34,0,0
     }
 
     public void ClimbUpComplete()
