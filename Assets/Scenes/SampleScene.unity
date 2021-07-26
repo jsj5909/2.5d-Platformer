@@ -3825,6 +3825,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _speed: 5
+  _ladderSpeed: 1
   _gravity: 16
   _jumpHeight: 5.2
   _coins: 0

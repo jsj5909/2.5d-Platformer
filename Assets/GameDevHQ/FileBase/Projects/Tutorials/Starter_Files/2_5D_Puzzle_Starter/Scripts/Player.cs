@@ -9,6 +9,8 @@ public class Player : MonoBehaviour
     [SerializeField]
     private float _speed = 5.0f;
     [SerializeField]
+    private float _ladderSpeed = 1.0f;
+    [SerializeField]
     private float _gravity = 1.0f;
     [SerializeField]
     private float _jumpHeight = 15.0f;
@@ -100,6 +102,25 @@ public class Player : MonoBehaviour
                 ClimbLadder();
             }
         }
+       if(_ladderClimb == true)
+        {
+            _anim.speed = 0;
+            if(Input.GetKey(KeyCode.W))
+            {
+                _anim.SetBool("LadderClimb", true);
+                _anim.SetBool("LadderClimbDown", false);
+                _anim.speed = 1;
+                _controller.Move(Vector3.up * _ladderSpeed * Time.deltaTime);
+            }
+            if(Input.GetKey(KeyCode.S))
+            {
+                _anim.SetBool("LadderClimb", false);
+                _anim.SetBool("LadderClimbDown", true);
+
+                _anim.speed = -1;
+                _controller.Move(Vector3.down * _ladderSpeed * Time.deltaTime);
+            }
+        }
        
     }
 
@@ -166,6 +187,7 @@ public class Player : MonoBehaviour
         }
         else
         {
+            if (_ladderClimb == true) return;
             _velocity.y -= _gravity * Time.deltaTime;
 
             _anim.SetFloat("Speed", 0);
@@ -234,7 +256,7 @@ public class Player : MonoBehaviour
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        Debug.DrawRay(hit.point, hit.normal, Color.blue, 1f);
+        //Debug.DrawRay(hit.point, hit.normal, Color.blue, 1f);
         if (_controller.isGrounded == false && hit.transform.tag == "Wall")
         {
             Debug.DrawRay(hit.point, hit.normal, Color.blue,2f);
@@ -286,9 +308,10 @@ public class Player : MonoBehaviour
         transform.position = _currentLadderClimbPosition;
         _anim.SetBool("LadderClimb", true);
         _ladderClimb = true;
+        _canClimbLadder = false;
         Debug.Log("CLimbing Ladder");
 
-       
+        _controller.enabled = true;
         //transform  = -2.34,0,0
     }
 
