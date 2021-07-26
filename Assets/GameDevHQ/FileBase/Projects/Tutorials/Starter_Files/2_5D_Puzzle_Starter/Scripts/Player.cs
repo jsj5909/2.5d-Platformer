@@ -41,16 +41,24 @@ public class Player : MonoBehaviour
 
     private bool _jumping = false;
 
+    private Vector3 _currentLadderClimbPosition;
+    private Vector3 _currentLadderTopPosition;
+    private Vector3 _currentLadderClimbDownStart;
+    private bool _currentLadderLeftClimb = false;
+
     private bool _ladderClimb = false;
     private bool _canClimbLadder = false;
-    private Vector3 _currentLadderClimbPosition;
+    private bool _canClimbDown = false;
+    
+    private bool _finishingLadderClimb = false;
+    private bool _atLadderTop = false;
 
     private float zPos = 0.0f;
 
     // Start is called before the first frame update
     void Start()
     {
-       // Application.targetFrameRate = 60;
+        // Application.targetFrameRate = 60;
 
         _anim = GetComponentInChildren<Animator>();
 
@@ -59,7 +67,7 @@ public class Player : MonoBehaviour
 
         if (_uiManager == null)
         {
-            Debug.LogError("The UI Manager is NULL."); 
+            Debug.LogError("The UI Manager is NULL.");
         }
 
         _uiManager.UpdateLivesDisplay(_lives);
@@ -68,60 +76,91 @@ public class Player : MonoBehaviour
     /// <summary>
     /// need to move input to update and everything else to fixed update
     /// </summary>
-  
+
     // Update is called once per frame
     void Update()
     {
-       if(Input.GetKeyDown(KeyCode.Space))
+        
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             _jumping = true;
         }
-          
+
         if (_hangingFromLedge == true)
         {
-          if (Input.GetKeyDown(KeyCode.W))
-          {
-             _anim.SetTrigger("ClimbUp");
-          }
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                _anim.SetTrigger("ClimbUp");
+            }
         }
-       if(Input.GetKeyDown(KeyCode.C))
+        if (Input.GetKeyDown(KeyCode.C))
         {
             _controller.enabled = false;
-            
+
         }
 
-       if(Input.GetKeyDown(KeyCode.V))
+        if (Input.GetKeyDown(KeyCode.V))
         {
             _controller.enabled = true;
         }
 
-       if(_canClimbLadder == true)
+        if (_canClimbLadder == true )
         {
             if (Input.GetKeyDown(KeyCode.W))
             {
                 ClimbLadder();
             }
+            if(Input.GetKeyDown(KeyCode.S))
+            {
+                BeginClimbDownLadder();
+            }
         }
-       if(_ladderClimb == true)
+        if (_ladderClimb == true)
         {
             _anim.speed = 0;
-            if(Input.GetKey(KeyCode.W))
+            if (Input.GetKey(KeyCode.W))
             {
-                _anim.SetBool("LadderClimb", true);
-                _anim.SetBool("LadderClimbDown", false);
-                _anim.speed = 1;
-                _controller.Move(Vector3.up * _ladderSpeed * Time.deltaTime);
+                if (!_atLadderTop)
+                {
+                    _anim.SetBool("LadderClimb", true);
+                    _anim.SetBool("LadderClimbDown", false);
+                    _anim.speed = 1;
+                    _controller.Move(Vector3.up * _ladderSpeed * Time.deltaTime);
+                    _anim.SetFloat("Direction", 1);
+                }
+                else
+                {
+                    _controller.enabled = false;
+                }
             }
-            if(Input.GetKey(KeyCode.S))
+            if (Input.GetKey(KeyCode.S))
             {
                 _anim.SetBool("LadderClimb", false);
                 _anim.SetBool("LadderClimbDown", true);
-
-                _anim.speed = -1;
+                _anim.SetFloat("Direction", -1f);
+                _anim.speed = 1;
                 _controller.Move(Vector3.down * _ladderSpeed * Time.deltaTime);
+
+                if (_controller.isGrounded)
+                {
+                    _ladderClimb = false;
+                    _anim.SetBool("LadderClimb", false);
+                    _anim.SetBool("LadderClimbDown", false);
+                }
             }
         }
-       
+        
+        if(_finishingLadderClimb == true)
+        {
+            _controller.enabled = false;
+        }
+        else
+        {
+            _controller.enabled = true;
+        }
+
+        
+
     }
 
     private void FixedUpdate()
@@ -134,8 +173,8 @@ public class Player : MonoBehaviour
 
     private void CalculateMovement()
     {
-        
-        
+
+
         float horizontalInput = Input.GetAxisRaw("Horizontal");
 
         Debug.Log("Ground: " + _controller.isGrounded);
@@ -150,10 +189,10 @@ public class Player : MonoBehaviour
             _canDoubleJump = false;
 
             _direction = new Vector3(horizontalInput, 0, 0);
-          
+
             _velocity = _direction * _speed;
             _velocity.y += -_gravity;
-         
+
 
             if (horizontalInput != 0)
             {
@@ -167,21 +206,21 @@ public class Player : MonoBehaviour
             }
             else
             {
-                _anim.SetFloat("Speed", Mathf.Abs(horizontalInput)); 
+                _anim.SetFloat("Speed", Mathf.Abs(horizontalInput));
             }
 
             if (_jumping)
             {
                 _yVelocity = _jumpHeight;
                 _canDoubleJump = true;
-                 _velocity.y = _jumpHeight;
+                _velocity.y = _jumpHeight;
                 Debug.Log("Jump From Ground!");
                 _anim.SetBool("Jumping", true);
                 _jumping = false;
             }
 
-           // Debug.Log("hInput: " + horizontalInput.ToString());
-           // _direction = new Vector3(horizontalInput, _yVelocity * Time.deltaTime, 0);
+            // Debug.Log("hInput: " + horizontalInput.ToString());
+            // _direction = new Vector3(horizontalInput, _yVelocity * Time.deltaTime, 0);
             //_velocity = _direction * _speed;
 
         }
@@ -206,24 +245,24 @@ public class Player : MonoBehaviour
                 if (_canWallJump == true)
                 {
                     _velocity = _hitInfo.normal * _speed;
-                  
+
                     _velocity.y += _jumpHeight;
-                    
+
                     _velocity.z = 0.0f;
 
-                    
-                        Vector3 facing = transform.localEulerAngles;
 
-                        facing.y = _hitInfo.normal.x < 0 ? 270 : 90;
+                    Vector3 facing = transform.localEulerAngles;
 
-                        transform.localEulerAngles = facing;
+                    facing.y = _hitInfo.normal.x < 0 ? 270 : 90;
+
+                    transform.localEulerAngles = facing;
 
                 }
                 _jumping = false;
 
             }
-   
-         }
+
+        }
         if (_controller.enabled)
         {
             _controller.Move(_velocity * Time.deltaTime);
@@ -259,23 +298,23 @@ public class Player : MonoBehaviour
         //Debug.DrawRay(hit.point, hit.normal, Color.blue, 1f);
         if (_controller.isGrounded == false && hit.transform.tag == "Wall")
         {
-            Debug.DrawRay(hit.point, hit.normal, Color.blue,2f);
+            Debug.DrawRay(hit.point, hit.normal, Color.blue, 2f);
             _hitInfo = hit;
             _canWallJump = true;
         }
 
-        if((hit.collider.tag == "MovableBox"))
+        if ((hit.collider.tag == "MovableBox"))
         {
             Rigidbody body = hit.collider.attachedRigidbody;
             if (body == null || body.isKinematic)
                 return;
 
-            Vector3 pushDir = new Vector3(hit.moveDirection.x, 0,0);
+            Vector3 pushDir = new Vector3(hit.moveDirection.x, 0, 0);
 
             body.velocity = pushDir * _pushSpeed;
 
         }
-      
+
     }
 
     public void GrabLedge(Vector3 handPosition, Ledge currentLedge)
@@ -294,25 +333,95 @@ public class Player : MonoBehaviour
         _activeLedge = currentLedge;
     }
 
-    public void CanClimbLadder(Vector3 ladderPosition)
+    public void CanClimbLadder(Vector3 ladderPosition, Vector3 finishClimbPosition, Vector3 climbDownStart, bool direction)
     {
         _canClimbLadder = !_canClimbLadder;
 
         _currentLadderClimbPosition = ladderPosition;
+        _currentLadderTopPosition = finishClimbPosition;
+        _currentLadderClimbDownStart = climbDownStart;
+        _currentLadderLeftClimb = direction;
+
+
+        Debug.Log("ladderTop: " + _currentLadderTopPosition.ToString());
     }
 
     public void ClimbLadder()
     {
         _controller.enabled = false;
-        
+
         transform.position = _currentLadderClimbPosition;
         _anim.SetBool("LadderClimb", true);
         _ladderClimb = true;
         _canClimbLadder = false;
         Debug.Log("CLimbing Ladder");
 
+
+        if (_currentLadderLeftClimb == true)
+        {
+            if(transform.rotation.eulerAngles.y != -90)
+                transform.rotation = Quaternion.LookRotation(Vector3.left);
+        }
+
+
         _controller.enabled = true;
         //transform  = -2.34,0,0
+    }
+
+    private void BeginClimbDownLadder()
+    {
+        _controller.enabled = false;
+
+        transform.position = _currentLadderClimbDownStart;
+        _anim.SetBool("LadderClimb", true);
+        _ladderClimb = true;
+        _canClimbLadder = false;
+
+
+        if (_currentLadderLeftClimb == true)
+        {
+            if (transform.rotation.eulerAngles.y != -90)
+                transform.rotation = Quaternion.LookRotation(Vector3.left);
+        }
+    
+
+        _controller.enabled = true;
+
+    }
+
+    public void LadderClimbUpComplete()
+    {
+       
+        
+        if(_anim.GetBool("LadderClimb") == true)
+        {
+            _anim.SetBool("LadderClimb", false);
+            _anim.SetTrigger("FinishClimbToTop");
+            _anim.speed = 1;
+            _ladderClimb = false;
+            _finishingLadderClimb = true;
+
+           
+        }
+        else
+        {
+            Debug.Log("Ladder climb false at top of ladder");
+            //can climb ladder = true
+            _atLadderTop = true;
+            _canClimbLadder = true;
+            //BeginClimbDownLadder();
+        }
+    }
+
+    public void SnapToLadderTop()
+    {
+        _controller.enabled = false;
+        Debug.Log("Ladder top: " + _currentLadderTopPosition.ToString());
+        transform.position = _currentLadderTopPosition;
+        _controller.enabled = true;
+
+        _finishingLadderClimb = false;
+        Debug.Log("Player Snapped");
     }
 
     public void ClimbUpComplete()
@@ -322,4 +431,23 @@ public class Player : MonoBehaviour
         _controller.enabled = true;
     }
 
+    public bool GetLadderClimb()
+    {
+        return _ladderClimb;
+    }
+
+    public void SetLadderClimb(bool value)
+    {
+        _ladderClimb = value;
+    }
+
+    public bool GetAtLadderTop()
+    {
+        return _atLadderTop;
+    }
+
+    public void SetAtLadderTop(bool value)
+    {
+        _atLadderTop = value;
+    }
 }
