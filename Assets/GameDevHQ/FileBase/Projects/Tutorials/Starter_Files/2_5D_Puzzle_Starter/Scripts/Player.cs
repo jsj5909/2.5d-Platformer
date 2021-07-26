@@ -362,6 +362,11 @@ public class Player : MonoBehaviour
             if(transform.rotation.eulerAngles.y != -90)
                 transform.rotation = Quaternion.LookRotation(Vector3.left);
         }
+        else
+        {
+            if (transform.rotation.eulerAngles.y != 90)
+                transform.rotation = Quaternion.LookRotation(Vector3.right);
+        }
 
 
         _controller.enabled = true;
@@ -383,7 +388,12 @@ public class Player : MonoBehaviour
             if (transform.rotation.eulerAngles.y != -90)
                 transform.rotation = Quaternion.LookRotation(Vector3.left);
         }
-    
+        else
+        {
+            if (transform.rotation.eulerAngles.y != 90)
+                transform.rotation = Quaternion.LookRotation(Vector3.right);
+        }
+
 
         _controller.enabled = true;
 
