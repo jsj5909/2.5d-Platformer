@@ -48,7 +48,7 @@ public class Player : MonoBehaviour
 
     private bool _ladderClimb = false;
     private bool _canClimbLadder = false;
-    private bool _canClimbDown = false;
+    
     
     private bool _finishingLadderClimb = false;
     private bool _atLadderTop = false;
