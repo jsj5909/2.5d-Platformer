@@ -48,6 +48,8 @@ public class Player : MonoBehaviour
 
     private bool _ladderClimb = false;
     private bool _canClimbLadder = false;
+
+    private bool _rolling = false;
     
     
     private bool _finishingLadderClimb = false;
@@ -81,6 +83,11 @@ public class Player : MonoBehaviour
     void Update()
     {
         
+        if(Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            _rolling = true;
+        }
+
         if (Input.GetKeyDown(KeyCode.Space))
         {
             _jumping = true;
@@ -217,6 +224,16 @@ public class Player : MonoBehaviour
                 Debug.Log("Jump From Ground!");
                 _anim.SetBool("Jumping", true);
                 _jumping = false;
+            }
+
+            if(_rolling)
+            {
+                
+                //_controller.enabled = false;
+
+                _anim.SetTrigger("Roll");
+                _rolling = false;
+
             }
 
             // Debug.Log("hInput: " + horizontalInput.ToString());
@@ -459,5 +476,21 @@ public class Player : MonoBehaviour
     public void SetAtLadderTop(bool value)
     {
         _atLadderTop = value;
+    }
+
+    public void FinishRoll()
+    {
+
+        //_controller.enabled = true;
+
+        //_rolling = false;
+        _controller.enabled = false;
+
+        transform.position = new Vector3(transform.position.x + 6,
+            transform.position.y, transform.position.z);
+
+        _controller.enabled = true;
+
+
     }
 }
