@@ -83,9 +83,11 @@ public class Player : MonoBehaviour
     void Update()
     {
         
-        if(Input.GetKeyDown(KeyCode.LeftShift))
+        if(Input.GetKeyDown(KeyCode.LeftShift) && !_jumping)
         {
             _rolling = true;
+           
+
         }
 
         if (Input.GetKeyDown(KeyCode.Space))
@@ -161,7 +163,7 @@ public class Player : MonoBehaviour
         {
             _controller.enabled = false;
         }
-        else
+        else if(_finishingLadderClimb == false && _hangingFromLedge == false)
         {
             _controller.enabled = true;
         }
@@ -228,11 +230,10 @@ public class Player : MonoBehaviour
 
             if(_rolling)
             {
-                
-                //_controller.enabled = false;
-
                 _anim.SetTrigger("Roll");
                 _rolling = false;
+
+                _controller.enabled = false;
 
             }
 
@@ -243,7 +244,7 @@ public class Player : MonoBehaviour
         }
         else
         {
-            if (_ladderClimb == true) return;
+            if (_ladderClimb == true ) return;
             _velocity.y -= _gravity * Time.deltaTime;
 
             _anim.SetFloat("Speed", 0);
@@ -348,6 +349,8 @@ public class Player : MonoBehaviour
         _hangingFromLedge = true;
 
         _activeLedge = currentLedge;
+
+        //_controller.enabled = true;
     }
 
     public void CanClimbLadder(Vector3 ladderPosition, Vector3 finishClimbPosition, Vector3 climbDownStart, bool direction)
@@ -456,6 +459,7 @@ public class Player : MonoBehaviour
         transform.position = _activeLedge.GetStandPos();
         _anim.SetBool("GrabLedge", false);
         _controller.enabled = true;
+        _hangingFromLedge = false;
     }
 
     public bool GetLadderClimb()
@@ -484,11 +488,26 @@ public class Player : MonoBehaviour
         //_controller.enabled = true;
 
         //_rolling = false;
-        _controller.enabled = false;
+         _controller.enabled = false;
 
-        transform.position = new Vector3(transform.position.x + 6,
-            transform.position.y, transform.position.z);
+       // Vector3 facing = transform.localEulerAngles;
 
+        Quaternion direction = Quaternion.LookRotation(Vector3.right);
+
+       
+        
+        if(transform.rotation == direction)
+        {
+            transform.position = new Vector3(transform.position.x + 5,
+              transform.position.y, transform.position.z);
+        }
+        else
+        {
+            transform.position = new Vector3(transform.position.x - 5,
+                transform.position.y, transform.position.z);
+        }
+       
+        
         _controller.enabled = true;
 
 
