@@ -57,6 +57,8 @@ public class Player : MonoBehaviour
 
     private float zPos = 0.0f;
 
+    [SerializeField] private GameObject _endLevelCutScene;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -82,7 +84,12 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        //testing purposes
+        if(Input.GetKeyDown(KeyCode.P))
+        {
+            AddCoins();
+        }
+
         if(Input.GetKeyDown(KeyCode.LeftShift) && !_jumping)
         {
             _rolling = true;
@@ -97,7 +104,7 @@ public class Player : MonoBehaviour
 
         if (_hangingFromLedge == true)
         {
-            if (Input.GetKeyDown(KeyCode.W))
+            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
             {
                 _anim.SetTrigger("ClimbUp");
             }
@@ -127,7 +134,7 @@ public class Player : MonoBehaviour
         if (_ladderClimb == true)
         {
             _anim.speed = 0;
-            if (Input.GetKey(KeyCode.W))
+            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
             {
                 if (!_atLadderTop)
                 {
@@ -142,7 +149,7 @@ public class Player : MonoBehaviour
                     _controller.enabled = false;
                 }
             }
-            if (Input.GetKey(KeyCode.S))
+            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
             {
                 _anim.SetBool("LadderClimb", false);
                 _anim.SetBool("LadderClimbDown", true);
@@ -292,6 +299,11 @@ public class Player : MonoBehaviour
         _coins++;
 
         _uiManager.UpdateCoinDisplay(_coins);
+
+        if(_coins == 15)
+        {
+            _endLevelCutScene.SetActive(true);
+        }
     }
 
     public void Damage()
